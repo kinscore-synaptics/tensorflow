@@ -3118,10 +3118,14 @@ TfLiteDelegate* TfLiteXNNPackDelegateCreate(
     const TfLiteXNNPackDelegateOptions* options) {
   xnn_status status = xnn_initialize(/*allocator=*/nullptr);
   if (status != xnn_status_success) {
+    TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                         "XNNPack Delegate is not supported.\n");
     return nullptr;
   }
 
   auto* xnnpack_delegate = new ::tflite::xnnpack::Delegate(options);
+  TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                       "Created TensorFlow Lite delegate for XNNPack");
   return xnnpack_delegate ? xnnpack_delegate->tflite_delegate() : nullptr;
 }
 

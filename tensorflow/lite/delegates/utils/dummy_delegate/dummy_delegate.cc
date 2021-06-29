@@ -95,6 +95,8 @@ TfLiteDelegate* TfLiteDummyDelegateCreate(const DummyDelegateOptions* options) {
   std::unique_ptr<tflite::dummy_test::DummyDelegate> dummy(
       new tflite::dummy_test::DummyDelegate(
           options ? *options : TfLiteDummyDelegateOptionsDefault()));
+  TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                       "Created TensorFlow Lite delegate for Dummy");
   return tflite::TfLiteDelegateFactory::CreateSimpleDelegate(std::move(dummy));
 }
 

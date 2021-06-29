@@ -371,7 +371,15 @@ TfLiteStatus DelegatePrepare(TfLiteContext* context, TfLiteDelegate* delegate) {
 TfLiteDelegate* TfLiteGpuDelegateCreate_New(
     const TfLiteGpuDelegateOptions_New* options) {
   auto* gpu_delegate = new tflite::gpu::cl::Delegate(options);
-  return gpu_delegate ? gpu_delegate->tflite_delegate() : nullptr;
+  if (!gpu_delegate) {
+    TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                         "CL Delegate is not supported.\n");
+    return nullptr;
+  }
+
+  TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                       "Created TensorFlow Lite delegate for CL");
+  return gpu_delegate->tflite_delegate();
 }
 
 void TfLiteGpuDelegateDelete_New(TfLiteDelegate* delegate) {

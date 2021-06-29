@@ -129,6 +129,8 @@ TfLiteDelegate* TfLiteHexagonDelegateCreate(
   if (options->enable_dynamic_batch_size) {
     initialized_delegate->flags |= kTfLiteDelegateFlagsAllowDynamicTensors;
   }
+  TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                       "Created TensorFlow Lite delegate for Hexagon");
   return initialized_delegate;
 }
 

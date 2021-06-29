@@ -468,10 +468,17 @@ TfLiteGpuDelegateOptions TfLiteGpuDelegateOptionsDefault() {
 
 TfLiteDelegate* TfLiteGpuDelegateCreate(
     const TfLiteGpuDelegateOptions* options) {
-  TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
-                       "Created TensorFlow Lite delegate for GPU.");
   auto* gpu_delegate = new tflite::gpu::gl::Delegate(options);
-  return gpu_delegate ? gpu_delegate->tflite_delegate() : nullptr;
+  if (!gpu_delegate) {
+    TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                         "GL Delegate is not supported.\n");
+    return nullptr;
+  }
+
+  TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                       "Created TensorFlow Lite delegate for GL");
+
+  return gpu_dlegate->tflite_delegate();
 }
 
 void TfLiteGpuDelegateDelete(TfLiteDelegate* delegate) {

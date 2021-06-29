@@ -206,10 +206,16 @@ TfLiteDelegate* TfLiteExternalDelegateCreate(
     const TfLiteExternalDelegateOptions* options) {
   auto* external_delegate_wrapper =
       new tflite::ExternalDelegateWrapper(options);
-  if (external_delegate_wrapper) {
-    return external_delegate_wrapper->tflite_wrapper_delegate();
+  if (!external_delegate_wrapper) {
+    TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                         "External Delegate is not supported.\n");
+    return nullptr;
   }
-  return nullptr;
+
+  TFLITE_LOG_PROD_ONCE(tflite::TFLITE_LOG_INFO,
+                       "Created TensorFlow Lite delegate for External");
+
+  return external_delegate_wrapper->tflite_wrapper_delegate();
 }
 
 void TfLiteExternalDelegateDelete(TfLiteDelegate* delegate) {
