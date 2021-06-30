@@ -617,13 +617,31 @@ TfLiteStatus GetTargetDevices(TfLiteContext* context, TfLiteDelegate* delegate,
           context, nnapi->ANeuralNetworksDevice_getName(device, &buffer),
           "Getting list of available devices", nnapi_errno);
       if (nnapi_cpu != buffer) {
+        TFLITE_LOG(TFLITE_LOG_INFO,
+                   "Adding NNAPI device '%s'.",
+                   buffer);
         result->push_back(device);
+      } else {
+        TFLITE_LOG(TFLITE_LOG_INFO,
+                   "Skipping NNAPI device '%s'.",
+                   buffer);
       }
     }
   }
 
   return kTfLiteOk;
 }
+
+#define ANEURALNETWORKS_OP_NAME_CASE(__name, __idx) \
+    case __idx: return #__name;
+const char *GetTfLiteOperatorName(int idx) {
+  switch (idx) {
+FOREACH_ANEURALNETWORKS_OP(ANEURALNETWORKS_OP_NAME_CASE)
+  }
+  return "";
+}
+
+#undef ANEURALNETWORKS_OP_NAME_ARRAY_ITEM
 
 }  // namespace
 
@@ -3662,6 +3680,10 @@ TfLiteStatus NNAPIDelegateKernel::GetOperationsSupportedByTargetNnApiDevices(
                 [&supported_nodes, &tflite_ops_support_status](int node_index) {
                   if (tflite_ops_support_status[node_index]) {
                     supported_nodes->push_back(node_index);
+                  } else {
+                    TFLITE_LOG(TFLITE_LOG_INFO,
+                               "TensorFlow Lite operator %s not supported by selected NNAPI accelerator.",
+                               GetTfLiteOperatorName(node_index));
                   }
                 });
 
@@ -4762,6 +4784,12 @@ TfLiteStatus StatefulNnApiDelegate::LimitDelegatedPartitions(
       });
 
   if (number_delegated_partitions > max_partitions) {
+    TFLITE_LOG(TFLITE_LOG_INFO,
+               "Too many delegated partions: %d > %d, removing %d smallest partitions",
+               number_delegated_partitions,
+               max_partitions,
+               number_delegated_partitions - max_partitions);
+
     std::sort(partition_params_array.begin(), partition_params_array.end(),
               [](const TfLiteDelegateParams& left,
                  const TfLiteDelegateParams& right) -> bool {
